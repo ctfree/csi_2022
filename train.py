@@ -108,7 +108,7 @@ def train():
     args.data_dir="./data"
     args.output_dir="./output"
     mu.set_logger(logging.INFO)
-    args.epochs = 4
+    args.epochs = 10
     args.batch_size = 32
     args.dim1=128
     args.dim2=126
@@ -127,10 +127,8 @@ def train():
     args.d_dff= 2104
     args.restore=True
     args.model_names = 'CSIPlus'
-    # args.encoder = 'Encoder'
-    # args.decoder = 'Decoder'
-    # args.dropout=0.05
-    # args.weight_decay=  1e-6
+    args.dropout=0.05
+    args.weight_decay=  1e-6
 
     # args.dropout=0
     # args.weight_decay=  0
