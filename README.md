@@ -36,6 +36,8 @@ cfg.json
 root@container-205611993c-9acdf044:~/csi/output/  CSIPlus_KF0# tree    
 .  
 ├── cfg.json  
+├── decoder.pth.tar
+├── encoder.pth.tar
 ├── decoder.pth.tar-101  
 ├── decoder.pth.tar-102  
 ├── decoder.pth.tar-103  
@@ -49,3 +51,8 @@ root@container-205611993c-9acdf044:~/csi/output/  CSIPlus_KF0# tree
 cd test  
 ./update.sh ${batch} 将需要测试的模型拷贝到Modelsave 中  
 ./test.sh 验证得到测试结果  
+
+### 训练过程  
+1. 使用 args.n_q_bit = 4 进行训练，直到模型稳定
+2. 改为args.n_q_bit = 3训练
+3. 验证测试集出现过拟合，删除掉transformer 的最后几层，加上dropout 和正则化再次训练
