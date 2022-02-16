@@ -354,6 +354,8 @@ class Encoder(Module):
     def create_ffd(self):
         self.input_ffd_layer = MLP(self.cfg.dim2 * self.cfg.dim3, [self.cfg.d_emodel], activation=self.cfg.activation)
         self.output_ffd_layer = MLP(self.cfg.d_emodel, [self.cfg.enc_dim], activation=self.cfg.activation)
+        # self.output_ffd_layer = MLP(self.cfg.d_emodel*self.cfg.dim1, [self.cfg.enc_dim], activation=self.cfg.activation)
+
 
     def pre_quantize(self, x):
         x = x*(2**self.cfg.n_q_bit) - 0.5
@@ -388,7 +390,7 @@ class Encoder(Module):
         return enc
 
     def forward(self, csi, return_hidden=False, **kwargs):
-        csi = (csi-self.mean_v)/self.std_v
+        # csi = (csi-self.mean_v)/self.std_v
         power_csi = None
         if self.cfg.shift_dim:
             csi = csi.transpose(1, 2)
@@ -490,47 +492,47 @@ class Decoder(Module):
             dec = dec.transpose(1, 2)
         return dec
 
-class EncoderPlus(Encoder):
-    def create_ffd(self):
-        self.input_ffd_layer = MLP(self.cfg.dim2 * self.cfg.dim3, [self.cfg.d_emodel], activation=self.cfg.activation)
-        self.output_ffd_layer = MLP(self.cfg.d_emodel*self.cfg.dim1, [self.cfg.enc_dim], activation=self.cfg.activation)
+# class EncoderPlus(Encoder):
+#     def create_ffd(self):
+#         self.input_ffd_layer = MLP(self.cfg.dim2 * self.cfg.dim3, [self.cfg.d_emodel], activation=self.cfg.activation)
+#         self.output_ffd_layer = MLP(self.cfg.d_emodel*self.cfg.dim1, [self.cfg.enc_dim], activation=self.cfg.activation)
 
-    def create_pos_emb(self):
-        self.pos_emb = nn.Parameter(self.cfg.initializer_range*torch.randn(self.cfg.dim1, self.cfg.d_emodel))
+#     def create_pos_emb(self):
+#         self.pos_emb = nn.Parameter(self.cfg.initializer_range*torch.randn(self.cfg.dim1, self.cfg.d_emodel))
 
-    def get_encode_input(self, csi):
-        csi = self.input_ffd_layer(csi.reshape(-1, self.cfg.dim1, self.cfg.dim2 * self.cfg.dim3))
-        inputs = csi+self.pos_emb
-        return inputs
+#     def get_encode_input(self, csi):
+#         csi = self.input_ffd_layer(csi.reshape(-1, self.cfg.dim1, self.cfg.dim2 * self.cfg.dim3))
+#         inputs = csi+self.pos_emb
+#         return inputs
 
-    def get_encode_output(self, enc):
-        enc = self.output_ffd_layer(enc.reshape(enc.shape[0], self.cfg.d_emodel*self.cfg.dim1))
-        enc = F.sigmoid(enc)
-        return enc
+#     def get_encode_output(self, enc):
+#         enc = self.output_ffd_layer(enc.reshape(enc.shape[0], self.cfg.d_emodel*self.cfg.dim1))
+#         enc = F.sigmoid(enc)
+#         return enc
 
 
-class DecoderPlus(Decoder):
-    def create_ffd(self):
-        if not self.cfg.no_deq:
-            self.input_ffd_layer = MLP(self.cfg.enc_dim, [self.cfg.d_dmodel*self.cfg.dim1], activation=self.cfg.activation)
-        else:
-            self.input_ffd_layer = MLP(self.cfg.enc_dim*self.cfg.n_q_bit, [self.cfg.d_dmodel*self.cfg.dim1], activation=self.cfg.activation)
+# class DecoderPlus(Decoder):
+#     def create_ffd(self):
+#         if not self.cfg.no_deq:
+#             self.input_ffd_layer = MLP(self.cfg.enc_dim, [self.cfg.d_dmodel*self.cfg.dim1], activation=self.cfg.activation)
+#         else:
+#             self.input_ffd_layer = MLP(self.cfg.enc_dim*self.cfg.n_q_bit, [self.cfg.d_dmodel*self.cfg.dim1], activation=self.cfg.activation)
 
-        self.output_ffd_layer = MLP(self.cfg.d_dmodel, [self.cfg.dim2 * self.cfg.dim3], activation=self.cfg.activation)
+#         self.output_ffd_layer = MLP(self.cfg.d_dmodel, [self.cfg.dim2 * self.cfg.dim3], activation=self.cfg.activation)
 
-    def create_pos_emb(self):
-        self.pos_emb = nn.Parameter(self.cfg.initializer_range*torch.randn(self.cfg.dim1, self.cfg.d_dmodel))
+#     def create_pos_emb(self):
+#         self.pos_emb = nn.Parameter(self.cfg.initializer_range*torch.randn(self.cfg.dim1, self.cfg.d_dmodel))
 
-    def get_decode_input(self, enc):
-        enc = self.input_ffd_layer(enc)
-        inputs = enc.reshape(enc.shape[0], self.cfg.dim1, self.cfg.d_dmodel)
-        #inputs += self.pos_emb
-        return inputs
+#     def get_decode_input(self, enc):
+#         enc = self.input_ffd_layer(enc)
+#         inputs = enc.reshape(enc.shape[0], self.cfg.dim1, self.cfg.d_dmodel)
+#         #inputs += self.pos_emb
+#         return inputs
 
-    def get_decode_output(self, dec):
-        dec = self.output_ffd_layer(dec)
-        dec = F.sigmoid(dec)
-        return dec
+#     def get_decode_output(self, dec):
+#         dec = self.output_ffd_layer(dec)
+#         # dec = F.sigmoid(dec)
+#         return dec
 
 
 class CSI(Module):
@@ -557,6 +559,7 @@ class CSI(Module):
         return outputs
 
     def calc_loss(self, inputs, outputs):
+        # nmse_loss=NMSE(inputs['csi'],outputs['dec'])
         csi = inputs['csi']-0.5
         dec = outputs['dec']-0.5
         enc_preq = outputs['enc_preq']
@@ -642,6 +645,16 @@ def NMSE(x, x_hat):
     power = np.sum(abs(x_C) ** 2, axis=1)
     mse = np.sum(abs(x_C - x_hat_C) ** 2, axis=1)
     nmse = np.mean(mse / power)
+    return nmse
+
+def NMSE_cuda1(x, x_hat):
+    x_real = x[:, :, :, 0].view(len(x),-1) - 0.5
+    x_imag = x[:, :, :, 1].view(len(x),-1) - 0.5
+    x_hat_real = x_hat[:, :, :, 0].view(len(x_hat), -1) - 0.5
+    x_hat_imag = x_hat[:, :, :, 1].view(len(x_hat), -1) - 0.5
+    power = torch.sum(x_real**2 + x_imag**2, axis=1)
+    mse = torch.sum((x_real-x_hat_real)**2 + (x_imag-x_hat_imag)**2, axis=1)
+    nmse = mse/power
     return nmse
 
 if __name__ == "__main__":

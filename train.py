@@ -1,9 +1,11 @@
 import os, sys, logging, inspect
+from pickle import TRUE
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from collections import OrderedDict, defaultdict
 import random
+import json
 
 import torch
 import mautil as mu
@@ -28,8 +30,8 @@ def kf(args, cls_dict=None):
     args.std_v = np.std(train, 0, keepdims=True).tolist()
     args.mean_v = np.mean(train, 0, keepdims=True).tolist()
 
-
-    kf = KFold(n_splits=args.kn, shuffle=True, random_state=9527)
+    print("args.kn",args.kn)
+    kf = KFold(n_splits=args.kn, shuffle=True)#,random_state=95217)
     splits = kf.split(train)
     rstate = np.random.RandomState(args.seed)
     kf_result = []
@@ -59,11 +61,11 @@ def kf(args, cls_dict=None):
                 model.cfg.distill_d_dmodel = distill_model.cfg.d_dmodel
             train_ds = gen_ds(model.cfg, 'train', train_data)
             val_ds = gen_ds(model.cfg, 'val', val_data)
-            # if 1==1:
-            #     model.create_model()
-            #     from torchinfo import summary
-            #     summary(model._model, input_size=(1, 128,126,2),depth=4,verbose=1)
-            #     return
+#             if 1==1:
+#                 model.create_model()
+#                 from torchinfo import summary
+#                 summary(model._model, input_size=(1, 128,126,2),depth=4,verbose=1)
+#                 return
             if not args.no_train:
                 model.fit(train_ds, val_ds)
             # model._model
@@ -87,13 +89,16 @@ def kf(args, cls_dict=None):
         #s = util.score(val_pred, len(util.label2id))
         #logging.info('  ***** kf validate score for model:%s, %s', cls, s)
 
-import json
-
 class CFG(object):
     pass
 
-if __name__ == "__main__":
-    cfg_fpath ="cfg.json"
+def train():
+    # cfg_fpath ="cfg.json"
+
+    # cfg_fpath ="output/CSI_KF0/cfg.json"
+    # cfg_fpath ="output/CSI_KF0/cfg.json"
+    cfg_fpath="output/CSIPlus_KF0/cfg.json"
+    
     with open(cfg_fpath) as f:
         cfg = json.load(f)
     args = CFG()
@@ -102,23 +107,37 @@ if __name__ == "__main__":
     args.use_tpu=False
     args.data_dir="./data"
     args.output_dir="./output"
-    mu.set_logger(logging.DEBUG)
-    args.epochs = 3
-    args.batch_size = 5
+    mu.set_logger(logging.INFO)
+    args.epochs = 40
+    args.batch_size = 200
     args.dim1=128
     args.dim2=126
     args.dim3=2
-    args.n_e_layer = 6
-    args.n_d_layer = 6
+    args.n_e_layer = 7
+    args.n_d_layer = 7
     args.n_head = 126
-    args.d_emodel = 400
-    args.d_dmodel = 400
-    args.enc_dim = 128
-    args.enc_time = 24
+    args.n_ehead=16
+    args.n_dhead=16
+    args.d_emodel = 544
+    args.d_dmodel = 544
+    args.enc_dim = 170
+    args.n_q_bit = 3
+    # args.enc_time = 24
     args.d_eff= 2104
     args.d_dff= 2104
+    args.restore=True
+    args.model_names = 'CSIPlus'
+    # args.encoder = 'Encoder'
+    # args.decoder = 'Decoder'
+    # args.dropout=0.05
+    # args.weight_decay=  1e-6
+
+    # args.dropout=0
+    # args.weight_decay=  0
+    # args.kn=1
+    # 
     # args.verbose = 1
-    # args.lr = 1e-3
+    # args.lr = 1e-4 
     # args.batch_size = 40
     # args.num = 20
     # args.kn = 2
@@ -146,7 +165,7 @@ if __name__ == "__main__":
     # args.vq_groups = 3
     # args.kfid = '0'
     # args.model_names = 'CSIPlus'
-    # args.use_mse = True
+    # args.use_mse = False
     # args.accumulated_batch_size = 2
 
     if args.method_name in gl:
@@ -158,3 +177,4 @@ if __name__ == "__main__":
     else:
         logging.error('unknown method : %s', args.method_name)
 
+train()

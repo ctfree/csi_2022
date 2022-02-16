@@ -1,2 +1,7 @@
+pandas
 tqdm
+scikit-learn
+numpy
+psutil
 mautil
+torchinfo

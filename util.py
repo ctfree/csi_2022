@@ -70,16 +70,18 @@ parser.add_argument("-activation")
 
 
 def load_data(args):
-    data_load_address = '../data'
+    data_load_address = './data'
     mat = sio.loadmat(data_load_address+'/Htrain.mat')
     x_train = mat['H_train']  # shape=8000*126*128*2  shape=8000*128*126*2
     x_train = np.transpose(x_train.astype('float32'),[0,2,1,3])
+    # x_train=x_train.repeat(5,axis=0)
     print(np.shape(x_train))
 
     # mat = sio.loadmat(data_load_address+'/Htest.mat')
     # x_test = mat['H_test']  # shape=2000*126*128*2  shape=2000*128*126*2
     # x_test = np.transpose(x_test.astype('float32'),[0,2,1,3])
-    # print(np.shape(x_test))
+    # x_test=x_test.repeat(5,axis=0)
+    # # print(np.shape(x_test))
 
     data = x_train[:args.num]
     #data = np.transpose(data, (0, 3, 1, 2))
