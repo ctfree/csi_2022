@@ -53,6 +53,6 @@ cd test
 ./test.sh 验证得到测试结果  
 
 ### 训练过程  
-1. 使用 args.n_q_bit = 4 进行训练，直到模型稳定
-2. 改为args.n_q_bit = 3训练
-3. 验证测试集出现过拟合，删除掉transformer 的最后几层，加上dropout 和正则化再次训练
+1. 使用args.n_q_bit = 4进行训练，直到模型稳定
+2. 改为args.n_q_bit = 3进行训练达到512bit目标
+3. 验证测试集出现过拟合，删除掉transformer的最后几层，加上dropout和正则化再次训练
