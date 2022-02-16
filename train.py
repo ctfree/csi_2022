@@ -108,8 +108,8 @@ def train():
     args.data_dir="./data"
     args.output_dir="./output"
     mu.set_logger(logging.INFO)
-    args.epochs = 40
-    args.batch_size = 200
+    args.epochs = 4
+    args.batch_size = 32
     args.dim1=128
     args.dim2=126
     args.dim3=2
