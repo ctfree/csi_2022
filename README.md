@@ -36,11 +36,14 @@ cfg.json
 root@container-205611993c-9acdf044:~/csi/output/  CSIPlus_KF0# tree    
 .  
 ├── cfg.json  
-├── decoder.pth.tar  
 ├── decoder.pth.tar-101  
 ├── decoder.pth.tar-102  
 ├── decoder.pth.tar-103  
 ├── decoder.pth.tar-104  
+├── encoder.pth.tar-101  
+├── encoder.pth.tar-102  
+├── encoder.pth.tar-103  
+├── encoder.pth.tar-104  
 
 ### 测试验证  
 cd test  
