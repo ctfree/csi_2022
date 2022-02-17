@@ -3,6 +3,6 @@ sub1/
 test/Modelsave
 test/__pycache__
 __pycache__/
-# output
+output
 tag.sh
 png/
