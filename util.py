@@ -3,6 +3,9 @@ import scipy.io as sio
 import numpy as np
 
 import mautil as mu
+from comet_ml import Experiment
+experiment = Experiment("xX841sM7jUmNIr4ZmqpUbmAEz",project_name="csi_2022",workspace="ctfree")
+
 
 logger = logging.getLogger(__name__)
 

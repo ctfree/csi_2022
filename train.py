@@ -1,4 +1,6 @@
 import os, sys, logging, inspect
+import util
+from util import parser
 from pickle import TRUE
 import numpy as np
 import pandas as pd
@@ -10,8 +12,6 @@ import json
 import torch
 import mautil as mu
 
-import util
-from util import parser
 from models import *
 from dataset import gen_ds
 #from preprocess import preprocess_data
@@ -31,7 +31,7 @@ def kf(args, cls_dict=None):
     args.mean_v = np.mean(train, 0, keepdims=True).tolist()
 
     print("args.kn",args.kn)
-    kf = KFold(n_splits=args.kn, shuffle=True)#,random_state=95217)
+    kf = KFold(n_splits=args.kn, shuffle=True,random_state=9527)
     splits = kf.split(train)
     rstate = np.random.RandomState(args.seed)
     kf_result = []
@@ -108,7 +108,7 @@ def train():
     args.data_dir="./data"
     args.output_dir="./output"
     mu.set_logger(logging.INFO)
-    args.epochs = 10
+    args.epochs = 5000
     args.batch_size = 32
     args.dim1=128
     args.dim2=126
@@ -127,12 +127,15 @@ def train():
     args.d_dff= 2104
     args.restore=True
     args.model_names = 'CSIPlus'
-    args.dropout=0.05
+    args.dropout=0.2
     args.weight_decay=  1e-6
+    args.n_es_epoch=2000
+    args.n_save_epoch=2
+    args.save_best=False
 
     # args.dropout=0
     # args.weight_decay=  0
-    # args.kn=1
+    args.kn=10
     # 
     # args.verbose = 1
     # args.lr = 1e-4 

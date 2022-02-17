@@ -4,7 +4,7 @@ from collections import OrderedDict
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-
+from util import experiment
 import torch
 
 from mautil.pt import PTModel
@@ -14,7 +14,6 @@ import nn
 import util
 
 logger = logging.getLogger(__name__)
-
 
 class Model(PTModel):
     cfg = PTModel.cfg.copy()
@@ -69,10 +68,17 @@ class Model(PTModel):
             self.cfg.d_emodel = self.cfg.enc_dim
         if self.cfg.d_dmodel is None:
             self.cfg.d_dmodel = self.cfg.enc_dim
+        experiment.log_parameters(self.cfg)
 
 
     def create_core_model(self, **kwargs):
         return getattr(nn, self.cfg.pt_model)(self.cfg)
+
+    def fit_epoch(self, ds, epoch, step, device=None, **kwargs):
+        step, losses=super().fit_epoch(ds,epoch, step, device=device,**kwargs)
+        self.losses=losses
+        experiment.log_metrics({"train_loss":losses["loss"]},epoch=epoch)
+        return step,losses
 
     def fit_batch(self, batch, step=None, phase='train', model=None, opt=None, lr_scheduler=None):
         if self.cfg.distill_model is not None and phase == 'train':
@@ -131,8 +137,9 @@ class Model(PTModel):
 
     def save(self, global_step=None, save_path=None, epoch=None, save_opt=False, **kwargs):
         self.cfg.saved_step = global_step
-        encoder_save_path = self.gen_fname('encoder.pth.tar-{}'.format(epoch))
-        decoder_save_path = self.gen_fname('decoder.pth.tar-{}'.format(epoch))
+        # print("losses",self.losses)
+        encoder_save_path = self.gen_fname('encoder.pth.tar-{}-{:.4f}'.format(epoch,self.losses["loss"]))
+        decoder_save_path = self.gen_fname('decoder.pth.tar-{}-{:.4f}'.format(epoch,self.losses["loss"]))
         to_save_model = self._model
         if not self.cfg.save_ema and not self.cfg.save_opt and self._ema_model is not None:
             to_save_model = self._ema_model.ema # switch ema
@@ -185,6 +192,7 @@ class Model(PTModel):
         return s
 
     def _should_stop(self, best_val_loss, val_loss, best_epoch=-1, current_epoch=-1):
+        experiment.log_metrics({"val_loss":val_loss},epoch=current_epoch)
         if super()._should_stop(best_val_loss, val_loss, best_epoch, current_epoch) or (val_loss<self.cfg.min_loss and not self.cfg.debug):
             return True
         else:

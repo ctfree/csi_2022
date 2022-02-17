@@ -387,7 +387,7 @@ class Encoder(Module):
 
     def forward(self, csi, return_hidden=False, **kwargs):
         csi = csi.permute(0,3,2,1)
-        # csi = (csi-self.mean_v)/self.std_v
+        csi = (csi-self.mean_v)/self.std_v
         power_csi = None
         if self.cfg.shift_dim:
             csi = csi.transpose(1, 2)
@@ -532,7 +532,7 @@ class DecoderPlus(Decoder):
 
     def get_decode_output(self, dec):
         dec = self.output_ffd_layer(dec)
-        # dec = F.sigmoid(dec)
+        dec = F.sigmoid(dec)
         return dec
 
 
@@ -607,7 +607,7 @@ class CFG(object):
 class AutoEncoder(nn.Module):
     def __init__(self, feedback_bits):
         super(AutoEncoder, self).__init__()
-        cfg_fpath = os.path.join(os.path.dirname(__file__), 'cfg.json')
+        cfg_fpath = os.path.join(os.path.dirname(__file__), 'Modelsave/cfg.json')
         with open(cfg_fpath) as f:
             cfg = json.load(f)
         self.cfg = CFG()

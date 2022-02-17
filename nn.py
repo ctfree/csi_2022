@@ -390,7 +390,7 @@ class Encoder(Module):
         return enc
 
     def forward(self, csi, return_hidden=False, **kwargs):
-        # csi = (csi-self.mean_v)/self.std_v
+        csi = (csi-self.mean_v)/self.std_v
         power_csi = None
         if self.cfg.shift_dim:
             csi = csi.transpose(1, 2)
@@ -446,7 +446,7 @@ class Decoder(Module):
     def get_decode_input(self, enc):
         enc = self.input_ffd_layer(enc)
         inputs = torch.cat([enc[:, None], self.dec_tokens.repeat(enc.shape[0], 1, 1)], 1)
-        inputs += self.pos_emb
+        # inputs += self.pos_emb
         return inputs
 
     def get_decode_output(self, dec):
