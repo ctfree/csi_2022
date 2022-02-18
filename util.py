@@ -74,7 +74,10 @@ parser.add_argument("-activation")
 
 def load_data(args):
     data_load_address = './data'
-    mat = sio.loadmat(data_load_address+'/Htrain.mat')
+    if args.is_debug:
+        mat = sio.loadmat(data_load_address+'/Hdebug.mat')
+    else:
+        mat = sio.loadmat(data_load_address+'/Htrain.mat')
     x_train = mat['H_train']  # shape=8000*126*128*2  shape=8000*128*126*2
     x_train = np.transpose(x_train.astype('float32'),[0,2,1,3])
     # x_train=x_train.repeat(5,axis=0)
@@ -91,6 +94,13 @@ def load_data(args):
     logger.info('num is %s', len(data))
     return data
 
+
+def gen_debug():
+    data_load_address = './data'
+    mat = sio.loadmat(data_load_address+'/Htrain.mat')
+    x_train = mat['H_train']  # shape=8000*126*128*2  shape=8000*128*126*2
+    x_train=x_train[:100]
+    sio.savemat(os.path.join(data_load_address, 'Hdebug.mat'), {'H_train': x_train})
 
 def NMSE(x, x_hat):
     x_real = np.reshape(x[:, :, :, 0], (len(x), -1))
@@ -109,7 +119,14 @@ def score(csi, dec):
     s = 1-NMSE(csi, dec)
     return s
 
+class CFG(object):
+    pass
 
 if __name__ == "__main__":
-    args = parser.parse_args([])
+    # args = parser.parse_args([])
+    args=CFG()
+    setattr(args,"num",100)
+    setattr(args,"is_debug",True)
+    load_data(args)
+    # gen_debug()
 
