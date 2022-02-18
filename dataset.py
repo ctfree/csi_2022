@@ -78,7 +78,7 @@ class DatasetMix():
             random.shuffle(_rows)
             _rows = _rows[:rows]
             # print(_rows)
-            if random.random() < 0.01:
+            if random.random() < 1:
                 y[_rows] = self.data[index_][_rows]  # 不同采样点按行合并，保持采样点独有特性，减轻模型对24那个维度的依赖
             else:
                 y = (1 - p * 0.2) * y + (p * 0.2) * self.data[index_]  # 增加数值扰动，保持采样点独有特性
