@@ -61,7 +61,7 @@ class DatasetMix():
         #     random.shuffle(_rows)
         #     # _rows = _rows[:128]
         #     y[_rows] =
-        if self.phase == 'train' and random.random() < 0.8:
+        if self.phase == 'train' and random.random() < 1:
             p = random.random()
             dev = (y-0.5)**2*0.1*p
             # if p<0.8:
@@ -79,7 +79,7 @@ class DatasetMix():
         #     _[:, :, 0] = y[:, :, 1]
         #     _[:, :, 1] = y[:, :, 0]
         #     y = _  # 不同时刻数据实虚存在部分相等的情况
-        if self.phase == 'train' and random.random() < 1:
+        if self.phase == 'train' and random.random() < 0.8:
             index_ = random.randint(0, self.data.shape[0] // 100 - 1) * 100 + index % 100
             p = random.random()
             rows = max(int(128 * p), 20)
