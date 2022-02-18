@@ -70,7 +70,7 @@ parser.add_argument("-distill_model", default=None)
 parser.add_argument("-distill_factor", type=int, default=1)
 parser.add_argument("-initializer_range", type=float)
 parser.add_argument("-activation")
-
+parser.add_argument("-is_debug")
 
 def load_data(args):
     data_load_address = './data'
@@ -124,9 +124,9 @@ class CFG(object):
 
 if __name__ == "__main__":
     # args = parser.parse_args([])
-    args=CFG()
-    setattr(args,"num",100)
-    setattr(args,"is_debug",True)
-    load_data(args)
-    # gen_debug()
+    # args=CFG()
+    # setattr(args,"num",100)
+    # setattr(args,"is_debug",True)
+    # load_data(args)
+    gen_debug()
 

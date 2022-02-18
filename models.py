@@ -70,6 +70,7 @@ class Model(PTModel):
         if self.cfg.d_dmodel is None:
             self.cfg.d_dmodel = self.cfg.enc_dim
         parameters=deepcopy(self.cfg)
+        parameters.saved_ckpts=[]
         parameters.std_v=[]
         parameters.mean_v=[]
         experiment.log_parameters(parameters)
@@ -81,7 +82,6 @@ class Model(PTModel):
     def fit_epoch(self, ds, epoch, step, device=None, **kwargs):
         step, losses=super().fit_epoch(ds,epoch, step, device=device,**kwargs)
         self.losses=losses
-        experiment.log_metrics({"train_loss":losses["loss"]},epoch=epoch)
         return step,losses
 
     def fit_batch(self, batch, step=None, phase='train', model=None, opt=None, lr_scheduler=None):
@@ -196,7 +196,11 @@ class Model(PTModel):
         return s
 
     def _should_stop(self, best_val_loss, val_loss, best_epoch=-1, current_epoch=-1):
-        experiment.log_metrics({"val_loss":val_loss},epoch=current_epoch)
+        experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"]},epoch=current_epoch)
+
+        import requests
+        requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.4f},val_{:.4f}&template=html".format(
+            self.losses["loss"], val_loss))
         if super()._should_stop(best_val_loss, val_loss, best_epoch, current_epoch) or (val_loss<self.cfg.min_loss and not self.cfg.debug):
             return True
         else:
