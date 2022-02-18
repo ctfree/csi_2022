@@ -52,9 +52,18 @@ class DatasetMix():
 
     def mixup(self, index):
         y = self.data[index]
-        if self.phase == 'train' and random.random() < 0.99:
+
+        # if self.phase == 'train' and random.random() < 0.3:
+        #     index_ = random.randint(0, self.data.shape[0] // 100 - 1) * 100 + index % 100
+        #     p = random.random()
+        #     # rows = max(int(128 * p), 20)
+        #     _rows = [i for i in range(128)]
+        #     random.shuffle(_rows)
+        #     # _rows = _rows[:128]
+        #     y[_rows] =
+        if self.phase == 'train' and random.random() < 0.8:
             p = random.random()
-            dev = (y-0.5)**2*0.2*p
+            dev = (y-0.5)**2*0.1*p
             # if p<0.8:
             #     y=y-dev
             # else:
@@ -73,7 +82,7 @@ class DatasetMix():
         if self.phase == 'train' and random.random() < 1:
             index_ = random.randint(0, self.data.shape[0] // 100 - 1) * 100 + index % 100
             p = random.random()
-            rows = max(int(128 * p), 1)
+            rows = max(int(128 * p), 20)
             _rows = [i for i in range(128)]
             random.shuffle(_rows)
             _rows = _rows[:rows]

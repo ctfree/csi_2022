@@ -133,12 +133,12 @@ def train():
     args.n_es_epoch=200
     args.n_save_epoch=1
     args.save_best=False
-    args.restore_epoch=842
+    args.restore_epoch=None
     args.kn=10
     args.save_keep=10
     # 
     # args.verbose = 1
-    args.lr = 5e-5
+    args.lr = 1e-4
     # args.batch_size = 40
     # args.num = 20
     # args.kn = 2
