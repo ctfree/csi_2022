@@ -13,6 +13,7 @@ import util
 import mautil as mu
 
 import torch
+import random
 
 
 logger = logging.getLogger(__name__)
@@ -20,10 +21,12 @@ logger = logging.getLogger(__name__)
 
 
 
+ 
 
 class DatasetMix():
     def __init__(self, cfg, data_type, data):
         self.cfg = cfg
+        self.phase=data_type
         self.data_type = data_type
         self.data = data
         self.inds = np.arange(len(data))
@@ -47,8 +50,39 @@ class DatasetMix():
         item = self.item2tensor(item)
         return item
 
+    def mixup(self, index):
+        y = self.data[index]
+        # if self.phase == 'train' and random.random() < -0.5:
+        #     y = y[::-1, :, :].copy()
+        # if self.phase == 'train' and random.random() < 0.5:
+        #     y = y[:, ::-1, :].copy()
+        # if self.phase == 'train' and random.random() < 0.5:
+        #     y = 1 - self.data[index]  # 数据中存在类似正交的关系
+        # if self.phase == 'train' and random.random() < 0.5:
+        #     _ = y
+        #     _[:, :, 0] = y[:, :, 1]
+        #     _[:, :, 1] = y[:, :, 0]
+        #     y = _  # 不同时刻数据实虚存在部分相等的情况
+        if self.phase == 'train' and random.random() < 1:
+            index_ = random.randint(0, self.data.shape[0] // 100 - 1) * 100 + index % 100
+            p = random.random()
+            rows = max(int(128 * p), 1)
+            _rows = [i for i in range(128)]
+            random.shuffle(_rows)
+            _rows = _rows[:rows]
+            # print(_rows)
+            if random.random() < 0.7:
+                y[_rows] = self.data[index_][_rows]  # 不同采样点按行合并，保持采样点独有特性，减轻模型对24那个维度的依赖
+            else:
+                y = (1 - p * 0.2) * y + (p * 0.2) * self.data[index_]  # 增加数值扰动，保持采样点独有特性
+        return y
+        
     def getitem(self, index):
-        item = {'csi': self.data[index]}
+        # item = {'csi': self.data[index]}
+        if self.data_type=='train':
+            item = {'csi': self.mixup(index)}
+        else:
+            item = {'csi': self.data[index]}
         return item
 
     def gen_batch(self, inds):
@@ -93,7 +127,9 @@ if __name__ == '__main__':
     from util import *
     args = parser.parse_args([])
     args.dataname = 'csi'
-    args.batch_size=512
+    args.batch_size=8
+    args.is_debug=True
+    args.n_dl_worker=1
     data = util.load_data(args)
     dl = gen_ds(args, 'train', data)
     for batch in tqdm(dl):
