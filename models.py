@@ -9,6 +9,7 @@ import torch
 
 from mautil.pt import PTModel
 import mautil as mu
+from copy import deepcopy
 
 import nn
 import util
@@ -68,7 +69,10 @@ class Model(PTModel):
             self.cfg.d_emodel = self.cfg.enc_dim
         if self.cfg.d_dmodel is None:
             self.cfg.d_dmodel = self.cfg.enc_dim
-        experiment.log_parameters(self.cfg)
+        parameters=deepcopy(self.cfg)
+        parameters.std_v=[]
+        parameters.mean_v=[]
+        experiment.log_parameters(parameters)
 
 
     def create_core_model(self, **kwargs):
