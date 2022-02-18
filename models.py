@@ -201,7 +201,8 @@ class Model(PTModel):
         return s
 
     def _should_stop(self, best_val_loss, val_loss, best_epoch=-1, current_epoch=-1):
-        experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"]},epoch=current_epoch)
+        lr = self._opt.state_dict()['param_groups'][0]['lr']
+        experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"],"lr":lr},epoch=current_epoch)
 
         import requests
         requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.5f},val_{:.5f}&template=html".format(

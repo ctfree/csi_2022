@@ -133,19 +133,19 @@ def train():
     args.n_es_epoch=200
     args.n_save_epoch=1
     args.save_best=False
-    args.restore_epoch=None
+    args.restore_epoch=None #1028
     args.kn=10
     args.save_keep=10
     # 
     # args.verbose = 1
-    args.lr = 1e-4
+    args.lr = 1.2e-4
     # args.batch_size = 40
     # args.num = 20
     # args.kn = 2
-    # args.n_lr_warmup_step = 5
-    # args.n_lr_decay_step = 10
+    args.n_lr_warmup_step = 3000
+    args.n_lr_decay_step = 30000
     # args.n_epoch_step = 20
-    # args.lr_decay_rate = 0.1
+    args.lr_decay_rate = 0.7
     # args.ema = 0.9
     #args.no_validate = True
     #args.restore = True
