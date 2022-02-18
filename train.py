@@ -46,7 +46,7 @@ def kf(args, cls_dict=None):
                     continue
             val_data = train[val_inds]
             train_data = train[train_inds]
-
+            train_data=train_data.repeat(2,axis=0)
             logging.info("*************kfid:%s", i)
             model = mu.create_model(name+'_KF'+str(i), args, cls_dict[cls])
             if args.distill_model is not None:
@@ -128,17 +128,17 @@ def train():
     args.d_dff= 2104
     args.restore=True
     args.model_names = 'CSIPlus'
-    args.dropout=0.2
-    args.weight_decay=  1e-6
-    args.n_es_epoch=2000
-    args.n_save_epoch=2
+    args.dropout=0
+    args.weight_decay=  0
+    args.n_es_epoch=200
+    args.n_save_epoch=1
     args.save_best=False
-    # args.dropout=0
-    # args.weight_decay=  0
+    args.restore_epoch=842
     args.kn=10
+    args.save_keep=10
     # 
     # args.verbose = 1
-    # args.lr = 1e-4 
+    args.lr = 5e-5
     # args.batch_size = 40
     # args.num = 20
     # args.kn = 2
@@ -151,7 +151,8 @@ def train():
     #args.restore = True
     # args.save = True
     #args.save_opt = True
-    # args.n_keep_ckpt = 2
+    args.n_keep_ckpt = 20
+    args.n_repeat=5
     #args.n_save_epoch = 1
     #args.save_half = True
     # args.use_fp16 = True
