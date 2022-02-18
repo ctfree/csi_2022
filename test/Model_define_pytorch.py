@@ -387,7 +387,7 @@ class Encoder(Module):
 
     def forward(self, csi, return_hidden=False, **kwargs):
         csi = csi.permute(0,3,2,1)
-        csi = (csi-self.mean_v)/self.std_v
+        # csi = (csi-self.mean_v)/self.std_v
         power_csi = None
         if self.cfg.shift_dim:
             csi = csi.transpose(1, 2)

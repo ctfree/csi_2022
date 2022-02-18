@@ -96,6 +96,11 @@ class Model(PTModel):
         return super().fit_batch(batch, step, phase, model, opt, lr_scheduler)
 
 
+    def val_epoch(self, ds, epoch, model=None, eval=True):
+        i,step, losses=super().val_epoch(ds,epoch, model=model,eval=eval)
+        self.losses["val_loss"]=losses["val_loss"]
+        return i,step,losses
+
     def restore(self, restore_epoch=None, epoch=None, model_dir=None):
         if self._model is None:
             self.create_model()
@@ -142,8 +147,8 @@ class Model(PTModel):
     def save(self, global_step=None, save_path=None, epoch=None, save_opt=False, **kwargs):
         self.cfg.saved_step = global_step
         # print("losses",self.losses)
-        encoder_save_path = self.gen_fname('encoder.pth.tar-{}-{:.4f}'.format(epoch,self.losses["loss"]))
-        decoder_save_path = self.gen_fname('decoder.pth.tar-{}-{:.4f}'.format(epoch,self.losses["loss"]))
+        encoder_save_path = self.gen_fname('encoder.pth.tar-{}-{:.5f}-{:.5f}'.format(epoch,self.losses["loss"],self.losses["val_loss"]))
+        decoder_save_path = self.gen_fname('decoder.pth.tar-{}-{:.5f}-{:.5f}'.format(epoch,self.losses["loss"],self.losses["val_loss"]))
         to_save_model = self._model
         if not self.cfg.save_ema and not self.cfg.save_opt and self._ema_model is not None:
             to_save_model = self._ema_model.ema # switch ema
@@ -199,7 +204,7 @@ class Model(PTModel):
         experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"]},epoch=current_epoch)
 
         import requests
-        requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.4f},val_{:.4f}&template=html".format(
+        requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.5f},val_{:.5f}&template=html".format(
             self.losses["loss"], val_loss))
         if super()._should_stop(best_val_loss, val_loss, best_epoch, current_epoch) or (val_loss<self.cfg.min_loss and not self.cfg.debug):
             return True

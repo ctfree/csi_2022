@@ -446,7 +446,7 @@ class Decoder(Module):
     def get_decode_input(self, enc):
         enc = self.input_ffd_layer(enc)
         inputs = torch.cat([enc[:, None], self.dec_tokens.repeat(enc.shape[0], 1, 1)], 1)
-        # inputs += self.pos_emb
+        inputs += self.pos_emb
         return inputs
 
     def get_decode_output(self, dec):
