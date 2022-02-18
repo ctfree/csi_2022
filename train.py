@@ -104,6 +104,7 @@ def train():
     args = CFG()
     for k, v in cfg.items():
         setattr(args, k, v)
+    args.is_debug=False
     args.use_tpu=False
     args.data_dir="./data"
     args.output_dir="./output"
@@ -132,7 +133,6 @@ def train():
     args.n_es_epoch=2000
     args.n_save_epoch=2
     args.save_best=False
-
     # args.dropout=0
     # args.weight_decay=  0
     args.kn=10
