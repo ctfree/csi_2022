@@ -14,6 +14,8 @@ from copy import deepcopy
 import nn
 import util
 
+from helper import visualize_Layer,get_local
+
 logger = logging.getLogger(__name__)
 
 class Model(PTModel):
@@ -73,7 +75,8 @@ class Model(PTModel):
         parameters.saved_ckpts=[]
         parameters.std_v=[]
         parameters.mean_v=[]
-        experiment.log_parameters(parameters)
+        if not self.cfg.no_comet:
+            experiment.log_parameters(parameters)
 
 
     def create_core_model(self, **kwargs):
@@ -146,7 +149,6 @@ class Model(PTModel):
 
     def save(self, global_step=None, save_path=None, epoch=None, save_opt=False, **kwargs):
         self.cfg.saved_step = global_step
-        # print("losses",self.losses)
         encoder_save_path = self.gen_fname('encoder.pth.tar-{}-{:.5f}-{:.5f}'.format(epoch,self.losses["loss"],self.losses["val_loss"]))
         decoder_save_path = self.gen_fname('decoder.pth.tar-{}-{:.5f}-{:.5f}'.format(epoch,self.losses["loss"],self.losses["val_loss"]))
         to_save_model = self._model
@@ -197,16 +199,28 @@ class Model(PTModel):
         if preds is None:
             preds = self.predict_rst(ds, data_type, preds)
         s = util.score(preds['csi'], preds['dec'])
+        self.visual()
         logger.info('score is %s', s)
         return s
 
-    def _should_stop(self, best_val_loss, val_loss, best_epoch=-1, current_epoch=-1):
-        lr = self._opt.state_dict()['param_groups'][0]['lr']
-        experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"],"lr":lr},epoch=current_epoch)
 
-        import requests
-        requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.5f},val_{:.5f}&template=html".format(
-            self.losses["loss"], val_loss))
+    def visual(self):
+        cache = get_local.cache
+        print(cache)
+        # attention_maps = cache['TransformerEncoderLayer._sa_block']
+        # visualize_Layer(attention_maps)
+
+
+
+    def _should_stop(self, best_val_loss, val_loss, best_epoch=-1, current_epoch=-1):
+
+        if not self.cfg.no_comet:
+            lr = self._opt.state_dict()['param_groups'][0]['lr']
+            experiment.log_metrics({"val_loss":val_loss,"train_loss":self.losses["loss"],"lr":lr},epoch=current_epoch)
+
+        # import requests
+        # requests.get("http://www.pushplus.plus/send?token=2085a873dbcc48c2bc583e1b175d0105&title=HAPPY_TRAIN&content=train_{:.5f},val_{:.5f}&template=html".format(
+            # self.losses["loss"], val_loss))
         if super()._should_stop(best_val_loss, val_loss, best_epoch, current_epoch) or (val_loss<self.cfg.min_loss and not self.cfg.debug):
             return True
         else:

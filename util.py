@@ -4,7 +4,9 @@ import numpy as np
 
 import mautil as mu
 from comet_ml import Experiment
-experiment = Experiment("xX841sM7jUmNIr4ZmqpUbmAEz",project_name="csi_2022",workspace="ctfree")
+experiment=None
+def genExperiment():
+    experiment = Experiment("xX841sM7jUmNIr4ZmqpUbmAEz",project_name="csi_2022",workspace="ctfree")
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +72,8 @@ parser.add_argument("-distill_model", default=None)
 parser.add_argument("-distill_factor", type=int, default=1)
 parser.add_argument("-initializer_range", type=float)
 parser.add_argument("-activation")
-parser.add_argument("-is_debug")
+parser.add_argument("-is_debug", action="store_true")
+parser.add_argument("-no_comet", action="store_true")
 
 def load_data(args):
     data_load_address = './data'
@@ -123,10 +126,8 @@ class CFG(object):
     pass
 
 if __name__ == "__main__":
-    # args = parser.parse_args([])
-    # args=CFG()
-    # setattr(args,"num",100)
-    # setattr(args,"is_debug",True)
-    # load_data(args)
-    gen_debug()
+    args = parser.parse_args()
+    setattr(args,"num",100)
+    load_data(args)
+    # gen_debug()
 

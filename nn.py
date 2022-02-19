@@ -11,6 +11,10 @@ from torch.nn.init import xavier_normal_
 from copy import deepcopy
 import math
 
+from typing import Optional
+from torch import Tensor
+from helper import get_local
+
 gl = globals()
 NUM_FEEDBACK_BITS = 128
 
@@ -218,7 +222,16 @@ class TransformerEncoder(torch.nn.TransformerEncoder):
 
 
 class TransformerEncoderLayer(nn.TransformerEncoderLayer):
-    pass
+   @get_local('attn')
+   def _sa_block(self, x: Tensor,
+                  attn_mask: Optional[Tensor], key_padding_mask: Optional[Tensor]) -> Tensor:
+        x = self.self_attn(x, x, x,
+                           attn_mask=attn_mask,
+                           key_padding_mask=key_padding_mask,
+                           need_weights=True)
+        attn=x[1]
+        x=x[0]
+        return self.dropout1(x)
 
 class TransformerDecoderLayer(nn.TransformerDecoderLayer):
     pass

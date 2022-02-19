@@ -6,3 +6,4 @@ psutil
 mautil
 torchinfo
 comet_ml
+bytecode

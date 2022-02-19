@@ -1,6 +1,6 @@
 import os, sys, logging, inspect
 import util
-from util import parser
+from util import genExperiment, parser
 from pickle import TRUE
 import numpy as np
 import pandas as pd
@@ -16,6 +16,7 @@ from models import *
 from dataset import gen_ds
 #from preprocess import preprocess_data
 from copy import deepcopy
+from helper import get_local
 gl = globals()
 
 
@@ -69,6 +70,7 @@ def kf(args, cls_dict=None):
             if not args.no_train:
                 model.fit(train_ds, val_ds)
             # model._model
+            get_local.activate()
             val_pred = None
             if (not args.no_predicting):
                 logger.info('start predict_rst')
@@ -80,6 +82,7 @@ def kf(args, cls_dict=None):
                 val_preds.append(val_pred)
             #if args.scoring:
             model.score(val_ds, preds=val_pred)
+            break
             #if args.save:
             #    model.save_predict(val_pred, '_val')
             #model.score(val_ds)
@@ -93,18 +96,12 @@ class CFG(object):
     pass
 
 def train():
+    args = parser.parse_args()
+    os.environ["PYTHONHASHSEED"] = str(args.seed)
+    if args.batch_size is None:
+        args.batch_size = 32
     # cfg_fpath ="cfg.json"
-
-    # cfg_fpath ="output/CSI_KF0/cfg.json"
-    # cfg_fpath ="output/CSI_KF0/cfg.json"
-    cfg_fpath="output/CSIPlus_KF0/cfg.json"
-    
-    with open(cfg_fpath) as f:
-        cfg = json.load(f)
-    args = CFG()
-    for k, v in cfg.items():
-        setattr(args, k, v)
-    args.is_debug=False
+    # args=CFG()
     args.use_tpu=False
     args.data_dir="./data"
     args.output_dir="./output"
@@ -153,22 +150,29 @@ def train():
     #args.save_opt = True
     args.n_keep_ckpt = 20
     args.n_repeat=5
+    args.use_fp16=True
     #args.n_save_epoch = 1
-    #args.save_half = True
+    args.save_half = True
     # args.use_fp16 = True
     # args.data_type = 'train'
-    # args.method_name = 'kf'
-    # args.lr_scheduler = 'ld'
-    # args.train_quantize = True
+    args.method_name = 'kf'
+    args.lr_scheduler = 'ld'
+    args.train_quantize = True
     # args.use_round_loss = True
     # args.n_q_bit = 4
     # args.mixup = 0.5
     # args.vq_dim = 12
     # args.vq_groups = 3
     # args.kfid = '0'
-    # args.model_names = 'CSIPlus'
+    args.model_names = 'CSIPlus'
     # args.use_mse = False
     # args.accumulated_batch_size = 2
+
+    args.visual=True
+    # args.comet=False
+    if not args.no_comet:
+        genExperiment()
+
 
     if args.method_name in gl:
         if inspect.isfunction(gl[args.method_name]):
