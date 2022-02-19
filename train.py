@@ -128,7 +128,7 @@ def train():
     args.d_dff= 2104
     args.restore=True
     args.model_names = 'CSIPlus'
-    args.dropout=0
+    args.dropout=0.1
     args.weight_decay=  0
     args.n_es_epoch=30
     args.n_save_epoch=1

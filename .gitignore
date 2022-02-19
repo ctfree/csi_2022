@@ -8,3 +8,5 @@ tag.sh
 backup/
 png/
 dataset/
+output1/
+nohup.out
